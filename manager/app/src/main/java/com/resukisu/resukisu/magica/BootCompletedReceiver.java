@@ -21,11 +21,45 @@ public class BootCompletedReceiver extends BroadcastReceiver {
             return;
         }
         try {
+            // If KSU not loaded, try GhostLock exploit first
+            boolean ksuLoaded = false;
+            try {
+                java.io.BufferedReader br = new java.io.BufferedReader(
+                    new java.io.FileReader("/proc/modules"));
+                String line;
+                while ((line = br.readLine()) != null) {
+                    if (line.startsWith("kernelsu ")) { ksuLoaded = true; break; }
+                }
+                br.close();
+            } catch (Exception ignored) {}
+
+            if (!ksuLoaded) {
+                // Check if su is already available (e.g., after soft reboot)
+                boolean suAvailable = false;
+                try {
+                    Process proc = Runtime.getRuntime().exec(new String[]{"su", "-c", "id"});
+                    java.io.BufferedReader suReader = new java.io.BufferedReader(
+                        new java.io.InputStreamReader(proc.getInputStream()));
+                    String output = suReader.readLine();
+                    suReader.close();
+                    proc.waitFor();
+                    if (output != null && output.contains("uid=0")) {
+                        suAvailable = true;
+                    }
+                } catch (Exception ignored) {}
+
+                if (!suAvailable) {
+                    context.startForegroundService(new Intent(context, GhostlockService.class));
+                    Log.i(TAG, "GhostlockService started (KSU not loaded, su not available)");
+                } else {
+                    Log.i(TAG, "Skipping GhostlockService (su already available)");
+                }
+            }
+
             context.startService(new Intent(context, MagicaService.class));
             Log.i(TAG, "MagicaService started from boot action: " + action);
         } catch (Throwable e) {
-
-            Log.e(TAG, "Failed to start MagicaService from boot action: " + action, e);
+            Log.e(TAG, "Failed to start service from boot action: " + action, e);
         }
     }
 }

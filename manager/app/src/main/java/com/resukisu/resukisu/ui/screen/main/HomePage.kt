@@ -92,6 +92,7 @@ import com.resukisu.resukisu.KernelVersion
 import com.resukisu.resukisu.Natives
 import com.resukisu.resukisu.R
 import com.resukisu.resukisu.ksuApp
+import com.resukisu.resukisu.magica.GhostlockService
 import com.resukisu.resukisu.magica.MagicaService
 import com.resukisu.resukisu.ui.component.KsuIsValid
 import com.resukisu.resukisu.ui.component.SwipeableSnackbarHost
@@ -221,6 +222,9 @@ fun HomePage(
                                     ).show()
                                 }
                             }
+                        },
+                        onClickGhostlock = {
+                            navigator.push(com.resukisu.resukisu.ui.navigation.Route.GhostlockLog)
                         }
                     )
 
@@ -509,7 +513,8 @@ private fun StatusCard(
     systemStatus: HomeViewModel.SystemStatus,
     isHideVersion: Boolean = false,
     onClickInstall: () -> Unit = {},
-    onClickJailbreak: () -> Unit = {}
+    onClickJailbreak: () -> Unit = {},
+    onClickGhostlock: () -> Unit = {}
 ) {
     val containerColor =
         if (systemStatus.ksuVersion != null)
@@ -648,6 +653,16 @@ private fun StatusCard(
                         ) {
                             Text(stringResource(R.string.home_jailbreak))
                         }
+                    }
+
+                    Button(
+                        onClick = onClickGhostlock,
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.error,
+                            contentColor = MaterialTheme.colorScheme.onError
+                        )
+                    ) {
+                        Text("GhostLock")
                     }
                 }
 

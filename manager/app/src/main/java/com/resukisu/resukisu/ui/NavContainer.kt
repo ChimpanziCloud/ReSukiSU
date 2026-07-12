@@ -74,6 +74,7 @@ import com.resukisu.resukisu.ui.screen.DynamicManagerScreen
 import com.resukisu.resukisu.ui.screen.ExecuteModuleActionScreen
 import com.resukisu.resukisu.ui.screen.FlashIt
 import com.resukisu.resukisu.ui.screen.FlashScreen
+import com.resukisu.resukisu.ui.screen.GhostlockLogScreen
 import com.resukisu.resukisu.ui.screen.InstallScreen
 import com.resukisu.resukisu.ui.screen.SulogScreen
 import com.resukisu.resukisu.ui.screen.TemplateEditorScreen
@@ -463,6 +464,7 @@ fun NavContainer(
                     }
                     entry<Route.Install> { key -> InstallScreen(key.preselectedKernelUri) }
                     entry<Route.Flash> { key -> FlashScreen(key.flashIt) }
+                    entry<Route.GhostlockLog> { GhostlockLogScreen() }
                     entry<Route.ExecuteModuleAction> { key ->
                         ExecuteModuleActionScreen(
                             key.moduleId
