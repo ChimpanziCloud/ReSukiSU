@@ -59,6 +59,18 @@ cd manager
 ./gradlew assembleRelease
 ```
 
+### Important: ksud is NOT included when building from source
+
+The `libksud.so` binary (which contains embedded `kernelsu.ko` modules) is gitignored upstream and must be added manually before building:
+
+1. Download `ksud-aarch64-linux-android.zip` from [ReSukiSU CI releases](https://github.com/cctv18/ReSukiSU_CI/releases)
+2. Extract and place at `manager/app/src/main/jniLibs/arm64-v8a/libksud.so`
+3. Then build
+
+Without this step, the APK will not contain ksud and KernelSU cannot be loaded. The exploit will still achieve root, but `su` will not persist.
+
+> The pre-built APK in this fork's releases (if available) already includes both `libksud.so` and `libghostlock.so`.
+
 ## Exploit Source
 
 See [ghostlock-ace6t](https://github.com/JoinChang/ghostlock-ace6t) for the exploit source code and technical details.
