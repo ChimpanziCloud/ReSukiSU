@@ -70,6 +70,13 @@ class KernelSUApplication : Application(), ViewModelStoreOwner {
             }
         }
 
+        // Skip heavy init during direct boot (before user unlock)
+        // to avoid SharedPreferences crash on credential-encrypted storage
+        if (!applicationContext.getSystemService(android.os.UserManager::class.java)
+                .isUserUnlocked) {
+            return
+        }
+
         MainShell.setBuilder(generateMainShellBuilder())
 
         runCatching {

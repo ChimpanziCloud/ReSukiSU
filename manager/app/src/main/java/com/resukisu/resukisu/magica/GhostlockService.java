@@ -21,7 +21,7 @@ public class GhostlockService extends Service {
     public void onCreate() {
         super.onCreate();
         NotificationChannel ch = new NotificationChannel(CHANNEL, "GhostLock",
-            NotificationManager.IMPORTANCE_LOW);
+            NotificationManager.IMPORTANCE_HIGH);
         getSystemService(NotificationManager.class).createNotificationChannel(ch);
         PowerManager pm = getSystemService(PowerManager.class);
         wakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "ghostlock:root");
@@ -51,19 +51,29 @@ public class GhostlockService extends Service {
             copyToSharedPath(bin);
 
             String log = getCacheDir().getAbsolutePath() + "/ghostlock_boot.log";
-            String cmd = "setsid " + bin.getAbsolutePath() + " --bootstrap > " + log + " 2>&1 &";
-            Runtime.getRuntime().exec(new String[]{"sh", "-c", cmd});
-            Log.i(TAG, "exploit launched");
+            ProcessBuilder pb = new ProcessBuilder(bin.getAbsolutePath(), "--bootstrap");
+            pb.redirectErrorStream(true);
+            pb.redirectOutput(new File(log));
+            Process proc = pb.start();
+            Log.i(TAG, "exploit launched (foreground)");
 
-            for (int i = 0; i < 300; i++) {
-                Thread.sleep(2000);
+            boolean rooted = false;
+            // Wait for exploit to finish (runs in this process, not phantom)
+            proc.waitFor(600, java.util.concurrent.TimeUnit.SECONDS);
+
+            // Check if root was achieved
+            for (int i = 0; i < 30; i++) {
                 if (isRooted()) {
                     Log.i(TAG, "ROOT achieved");
+                    rooted = true;
                     break;
                 }
+                Thread.sleep(2000);
             }
+            showResult(rooted ? "Root successful" : "Jailbreak failed");
         } catch (Exception e) {
             Log.e(TAG, "error", e);
+            showResult("Error: " + e.getMessage());
         }
         done();
     }
@@ -102,6 +112,13 @@ public class GhostlockService extends Service {
             }
             dst.setExecutable(true);
         } catch (Exception e) { Log.w(TAG, "copy to shared: " + e.getMessage()); }
+    }
+
+    private void showResult(String text) {
+        Notification notif = new Notification.Builder(this, CHANNEL)
+            .setContentTitle("GhostLock").setContentText(text)
+            .setSmallIcon(android.R.drawable.ic_lock_lock).setOngoing(false).build();
+        getSystemService(NotificationManager.class).notify(2, notif);
     }
 
     private void done() {

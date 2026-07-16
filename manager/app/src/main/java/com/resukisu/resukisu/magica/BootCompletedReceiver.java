@@ -15,8 +15,12 @@ public class BootCompletedReceiver extends BroadcastReceiver {
             return;
         }
         var action = intent.getAction();
-        if (!Intent.ACTION_LOCKED_BOOT_COMPLETED.equals(action)
-                && !Intent.ACTION_BOOT_COMPLETED.equals(action)
+        // Skip LOCKED_BOOT_COMPLETED — credential-encrypted storage not available yet,
+        // KernelSUApplication will crash. Only handle BOOT_COMPLETED (after unlock).
+        if (Intent.ACTION_LOCKED_BOOT_COMPLETED.equals(action)) {
+            return;
+        }
+        if (!Intent.ACTION_BOOT_COMPLETED.equals(action)
                 && !"com.resukisu.resukisu.magica.LAUNCH".equals(action)) {
             return;
         }
@@ -42,7 +46,9 @@ public class BootCompletedReceiver extends BroadcastReceiver {
                         new java.io.InputStreamReader(proc.getInputStream()));
                     String output = suReader.readLine();
                     suReader.close();
-                    proc.waitFor();
+                    if (!proc.waitFor(5, java.util.concurrent.TimeUnit.SECONDS)) {
+                        proc.destroyForcibly();
+                    }
                     if (output != null && output.contains("uid=0")) {
                         suAvailable = true;
                     }
