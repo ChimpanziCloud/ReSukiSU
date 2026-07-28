@@ -598,6 +598,10 @@ private fun ShortcutIntentHandler(
     val intentStateValue by intentState.collectAsState()
     LaunchedEffect(intentStateValue) {
         val intent = activity.intent
+        if (intent?.action == "ghostlock_log") {
+            navigator.push(Route.GhostlockLog)
+            return@LaunchedEffect
+        }
         val type = intent?.getStringExtra("shortcut_type") ?: return@LaunchedEffect
         when (type) {
             "module_action" -> {

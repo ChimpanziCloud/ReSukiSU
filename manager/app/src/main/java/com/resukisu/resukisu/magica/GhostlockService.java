@@ -3,6 +3,7 @@ package com.resukisu.resukisu.magica;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
 import android.os.IBinder;
@@ -33,6 +34,7 @@ public class GhostlockService extends Service {
         if (running) return START_NOT_STICKY;
         Notification notif = new Notification.Builder(this, CHANNEL)
             .setContentTitle("GhostLock").setContentText("Jailbreaking...")
+            .setContentIntent(getLogIntent())
             .setSmallIcon(android.R.drawable.ic_lock_lock).setOngoing(true).build();
         startForeground(1, notif);
         new Thread(this::run).start();
@@ -114,9 +116,18 @@ public class GhostlockService extends Service {
         } catch (Exception e) { Log.w(TAG, "copy to shared: " + e.getMessage()); }
     }
 
+    private PendingIntent getLogIntent() {
+        Intent i = new Intent(this, com.resukisu.resukisu.ui.MainActivity.class);
+        i.setAction("ghostlock_log");
+        i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        return PendingIntent.getActivity(this, 0, i,
+            PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+    }
+
     private void showResult(String text) {
         Notification notif = new Notification.Builder(this, CHANNEL)
             .setContentTitle("GhostLock").setContentText(text)
+            .setContentIntent(getLogIntent())
             .setSmallIcon(android.R.drawable.ic_lock_lock).setOngoing(false).build();
         getSystemService(NotificationManager.class).notify(2, notif);
     }
